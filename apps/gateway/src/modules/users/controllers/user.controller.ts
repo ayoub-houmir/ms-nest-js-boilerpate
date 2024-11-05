@@ -3,9 +3,9 @@ import { ClientProxy } from '@nestjs/microservices';
 import { ApiTags, ApiResponse, ApiOperation } from '@nestjs/swagger';
 import { firstValueFrom } from 'rxjs';
 import { Result } from '@app/core';
-import { CreateUserRequest } from '../dtos/requests/create-user.request';
-import { CreateUserResponse } from '../dtos/responses/create-user.response';
-import { UserCommands } from '../interfaces/user-commands.interface';
+import { CreateUserRequest } from '@app/common/dtos/users/requests/create-user.request';
+import { CreateUserResponse } from '@app/common/dtos/users/responses/create-user.response';
+import { UserCommands } from '@app/common/interfaces/user-commands.interface';
 
 @Controller('users')
 @ApiTags('Users')
@@ -27,8 +27,6 @@ export class UserController {
     type: CreateUserResponse 
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  // @UsePipes(new ValidationPipe({ transform: true }))
- 
   async createUser(
     @Body() request: CreateUserRequest
   ): Promise<Result<CreateUserResponse>> {

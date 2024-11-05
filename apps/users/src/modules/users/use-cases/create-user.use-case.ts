@@ -3,35 +3,28 @@ import { UserRepository } from '../repositories/user.repository';
 import { Result } from '@app/core/types/result.type';
 import { UserDto } from '../dtos/user.dto';
 import { User } from '../entities/user.entity';
+import { UseCase } from '@app/core/base/use-case.base';
+import { CreateUserRequest } from '@app/common/dtos/users/requests/create-user.request';
+import { CreateUserResponse } from '@app/common/dtos/users/responses/create-user.response';
 
 @Injectable()
-export class CreateUserUseCase {
+export class CreateUserUseCase implements UseCase<CreateUserRequest, CreateUserResponse> {
   private readonly logger = new Logger(CreateUserUseCase.name);
 
   constructor(private readonly userRepository: UserRepository) {}
 
-  async execute(dto: UserDto): Promise<Result<UserDto>> {
+  async execute(request: CreateUserRequest): Promise<Result<CreateUserResponse>> {
     try {
-      this.logger.log(`Creating user with email: ${dto.email}`);
+      this.logger.log(`Creating user with email: ${request.email}`);
 
       // Create domain entity
-      const userResult = User.create({
-        id: dto.id,
-        email: dto.email,
-        name: dto.name,
-        password: dto.password,
-        createdAt: dto.createdAt || new Date(),
-        updatedAt: dto.updatedAt || new Date()
-      });
-
-      console.log('userResult', userResult);
-
+      const userResult = User.create({ ...request, createdAt: new Date(), updatedAt: new Date() });
       if (userResult.isFailure) {
         return Result.fail(userResult.error);
       }
 
       // Check if user already exists
-      const existingUser = await this.userRepository.findByEmail(dto.email);
+      const existingUser = await this.userRepository.findByEmail(userResult.value.email);
       if (existingUser) {
         return Result.fail(new Error('User already exists'));
       }
@@ -47,7 +40,7 @@ export class CreateUserUseCase {
       const user = savedResult.value;
       // Convert back to DTO
       console.log('UserDto.fromDomain(savedResult.value)', UserDto.fromDomain(user));
-      return Result.ok(UserDto.fromDomain(user));
+      return Result.ok(UserDto.fromDomain(user) as CreateUserResponse);
 
     } catch (error) {
       console.log('error', error);

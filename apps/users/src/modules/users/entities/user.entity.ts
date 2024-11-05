@@ -21,7 +21,6 @@ export class User extends Entity {
   }
 
   static create(props: UserProps): Result<User> {
-    console.log('create', props);
     // Email validation
     if (!props.email) {
       return Result.fail(new Error('Email is required'));
